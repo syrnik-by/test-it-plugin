@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.8.22"
+kotlin = "1.6.0"
 idea = "2022.3"
 intellijPlugin = "1.13.3"
 junit = "5.9.3"
