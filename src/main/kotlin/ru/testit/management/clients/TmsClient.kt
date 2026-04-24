@@ -1,88 +1,86 @@
 package ru.testit.management.clients
 
-import kotlinx.serialization.Contextual
-import ru.testit.kotlin.client.apis.*
-import ru.testit.kotlin.client.infrastructure.ApiClient
-import ru.testit.kotlin.client.models.*
+import ru.testit.client.api.AttachmentsApi
+import ru.testit.client.api.AutoTestsApi
+import ru.testit.client.api.ProjectsApi
+import ru.testit.client.api.SectionsApi
+import ru.testit.client.api.TestResultsApi
+import ru.testit.client.api.TestRunsApi
+import ru.testit.client.api.WorkItemsApi
+import ru.testit.client.invoker.ApiClient
+import ru.testit.client.invoker.ApiException
+import ru.testit.client.invoker.Configuration
+import ru.testit.client.invoker.auth.ApiKeyAuth
+import ru.testit.client.model.SectionModel
+import ru.testit.client.model.WorkItemFilterModel
+import ru.testit.client.model.WorkItemModel
+import ru.testit.client.model.WorkItemSelectModel
+import ru.testit.client.model.WorkItemShortModel
 import ru.testit.management.windows.settings.TmsSettingsState
-import java.util.*
+import java.util.UUID
 import java.util.logging.Logger
-
 
 class TmsClient(url: String) {
     private val _logger = Logger.getLogger(TmsClient::class.java.simpleName)
-    @Contextual
+
+    private val apiClient: ApiClient
     private val testRunsApi: TestRunsApi
-    @Contextual
     private val autoTestsApi: AutoTestsApi
-    @Contextual
     private val attachmentsApi: AttachmentsApi
-    @Contextual
     private val testResultsApi: TestResultsApi
-    @Contextual
     private val projectsApi: ProjectsApi
-    @Contextual
     private val workItemsApi: WorkItemsApi
-    @Contextual
-    private val projectSectionsApi: ProjectSectionsApi
-
-
+    private val sectionsApi: SectionsApi
 
     init {
-        testRunsApi = TestRunsApi(url)
-        init(testRunsApi)
-        autoTestsApi = AutoTestsApi(url)
-        init(autoTestsApi)
-        attachmentsApi = AttachmentsApi(url)
-        init(attachmentsApi)
-        testResultsApi = TestResultsApi(url)
-        init(testResultsApi)
-        projectsApi = ProjectsApi(url)
-        init(projectsApi)
-        workItemsApi = WorkItemsApi(url)
-        init(workItemsApi)
-        projectSectionsApi = ProjectSectionsApi(url)
-        init(projectSectionsApi)
+        apiClient = Configuration.getDefaultApiClient()
+        apiClient.basePath = url
+        apiClient.isVerifyingSsl = false
+
+        val auth = apiClient.getAuthentication("Bearer or PrivateToken") as ApiKeyAuth
+        auth.apiKeyPrefix = "PrivateToken"
+        auth.apiKey = TmsSettingsState.instance.privateToken
+
+        testRunsApi = TestRunsApi(apiClient)
+        autoTestsApi = AutoTestsApi(apiClient)
+        attachmentsApi = AttachmentsApi(apiClient)
+        testResultsApi = TestResultsApi(apiClient)
+        projectsApi = ProjectsApi(apiClient)
+        workItemsApi = WorkItemsApi(apiClient)
+        sectionsApi = SectionsApi(apiClient)
     }
 
-    fun init(client: ApiClient,
-             token: String = TmsSettingsState.instance.privateToken ) {
-        client.apiKeyPrefix["Authorization"] = "PrivateToken"
-        client.apiKey["Authorization"] = token
-        client.verifyingSsl = false
+    fun updateToken(token: String) {
+        val auth = apiClient.getAuthentication("Bearer or PrivateToken") as ApiKeyAuth
+        auth.apiKey = token
     }
 
     fun getSettingsValidationErrorMsg(projectId: String, privateToken: String): String? {
-        try {
-            if (projectsApi.apiKey["Authorization"].isNullOrEmpty()) {
-                projectsApi.apiKey["Authorization"] = privateToken
-            }
+        return try {
+            updateToken(privateToken)
             projectsApi.getProjectById(projectId)
-
-            return null
+            null
+        } catch (exception: ApiException) {
+            exception.message
         } catch (exception: Throwable) {
-            return exception.message
+            exception.message
         }
     }
 
     fun getSections(): Iterable<SectionModel> {
         println("getSections:")
         val startTime = System.currentTimeMillis()
-
-        val sections = mutableSetOf<SectionModel>()
-
+        val sections = mutableListOf<SectionModel>()
         try {
-            sections.addAll(
-                projectSectionsApi.getSectionsByProjectId(
-                    projectId = TmsSettingsState.instance.projectId,
-                )
+            val result = sectionsApi.getSectionsByProjectId(
+                TmsSettingsState.instance.projectId,
+                null, null, null, null, null
             )
-        } catch (exception: Throwable) {
+            if (result != null) sections.addAll(result)
+        } catch (exception: ApiException) {
             _logger.severe { exception.message }
         }
-        val endTime = System.currentTimeMillis()
-        println("Затраченное время: ${endTime - startTime} мс")
-
+        println("Затраченное время: ${System.currentTimeMillis() - startTime} мс")
         return sections
     }
 
@@ -90,32 +88,32 @@ class TmsClient(url: String) {
         println("getWorkItemById:")
         val startTime = System.currentTimeMillis()
         val result = workItemsApi.getWorkItemById(id.toString(), null, null)
-        val endTime = System.currentTimeMillis()
-        println("Затраченное время: ${endTime - startTime} мс")
+        println("Затраченное время: ${System.currentTimeMillis() - startTime} мс")
         return result
     }
 
-    fun getWorkItemsBySectionId(sectionId: UUID?): Iterable<WorkItemShortApiResult> {
+    fun getWorkItemsBySectionId(sectionId: UUID?): Iterable<WorkItemShortModel> {
         println("getWorkItemsBySectionId:")
         val startTime = System.currentTimeMillis()
 
-        if (sectionId == null) {
-            return listOf()
-        }
+        if (sectionId == null) return listOf()
 
-        val filter = WorkItemFilterApiModel(sectionIds = setOf(sectionId), isDeleted = false)
-        val request = WorkItemSelectApiModel(filter = filter)
-        try {
-            val workItemsList = workItemsApi.apiV2WorkItemsSearchPost(
-                workItemSelectApiModel = request
+        val filter = WorkItemFilterModel().apply {
+            sectionIds = setOf(sectionId)
+            isDeleted = false
+        }
+        val request = WorkItemSelectModel().apply {
+            this.filter = filter
+        }
+        return try {
+            val result = workItemsApi.apiV2WorkItemsSearchPost(
+                null, null, null, null, null, request
             )
-            val endTime = System.currentTimeMillis()
-            println("Затраченное время: ${endTime - startTime} мс")
-            return workItemsList
-        } catch (exception: Throwable) {
+            println("Затраченное время: ${System.currentTimeMillis() - startTime} мс")
+            result ?: listOf()
+        } catch (exception: ApiException) {
             _logger.severe { exception.message }
+            listOf()
         }
-
-        return listOf()
     }
 }
