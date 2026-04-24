@@ -1,5 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -56,16 +55,16 @@ tasks {
     }
 
     withType<JavaCompile>().configureEach {
-        sourceCompatibility = libs.versions.javaVersion
-        targetCompatibility = libs.versions.javaVersion
-        options.encoding = libs.versions.javaEncoding
+        sourceCompatibility = libs.versions.javaVersion.get()
+        targetCompatibility = libs.versions.javaVersion.get()
+        options.encoding = libs.versions.javaEncoding.get()
         options.isFork = true
     }
 
     withType<KotlinCompile>().configureEach {
-        compilerOptions {
-            apiVersion = KotlinVersion.KOTLIN_1_7
-            languageVersion = KotlinVersion.KOTLIN_1_9
+        kotlinOptions {
+            apiVersion = "1.6"
+            languageVersion = "1.6"
             incremental = true
         }
     }
