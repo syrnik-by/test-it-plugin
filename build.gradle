@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    alias(libs.plugins.kotlin)
+    id 'java'
     id 'org.jetbrains.intellij' version '1.4.0'
 }
 
@@ -26,12 +26,11 @@ repositories {
 
 dependencies {
     api(libs.jakarta)
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     implementation(libs.jsoup)
     implementation(libs.slf4j)
     implementation(libs.testit.api)
     implementation 'com.squareup.okhttp3:okhttp:3.9.1'
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 }
 
 intellij {
@@ -66,14 +65,6 @@ tasks {
         options.incremental = true
         options.fork = true
         options.encoding = libs.versions.javaEncoding.get()
-    }
-
-    withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            apiVersion = '1.6'
-            languageVersion = '1.6'
-            incremental = true
-        }
     }
 
     withType(Test).configureEach {
