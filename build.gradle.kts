@@ -30,10 +30,6 @@ dependencies {
 }
 
 tasks {
-    wrapper {
-        gradleVersion = libs.versions.gradle.get()
-    }
-
     patchPluginXml {
         sinceBuild.set(libs.versions.pluginSinceBuild)
         untilBuild.set(libs.versions.pluginUntilBuild)
