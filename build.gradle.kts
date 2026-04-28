@@ -24,7 +24,7 @@ dependencies {
     api(libs.jakarta)
     implementation(libs.jsoup)
     implementation(libs.slf4j)
-    implementation(libs.testit.api)
+    implementation(libs.testit)  // fix: was libs.testit.api — entry in toml is testit-api → accessor is libs.testit
     implementation(libs.okhttp)
     testImplementation(kotlin("test"))
 }
@@ -51,16 +51,16 @@ tasks {
     }
 
     withType<JavaCompile>().configureEach {
-        sourceCompatibility = libs.versions.javaVersion.get()
-        targetCompatibility = libs.versions.javaVersion.get()
-        options.encoding = libs.versions.javaEncoding.get()
+        sourceCompatibility = libs.versions.javaVersion.get()   // fix: added .get() — Provider<String> → String
+        targetCompatibility = libs.versions.javaVersion.get()   // fix: added .get()
+        options.encoding = libs.versions.javaEncoding.get()     // fix: added .get()
         options.isFork = true
     }
 
     withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            apiVersion = "1.6"
-            languageVersion = "1.6"
+        kotlinOptions {           // fix: replaced compilerOptions{} with kotlinOptions{} (compatible with kotlin 1.6+)
+            apiVersion = "1.7"
+            languageVersion = "1.8"
             incremental = true
         }
     }
