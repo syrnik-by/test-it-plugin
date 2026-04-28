@@ -1,0 +1,104 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+plugins {
+    alias(libs.plugins.kotlin)
+    id 'org.jetbrains.intellij' version '1.4.0'
+}
+
+def properties(String key) { providers.gradleProperty(key) }
+def environment(String key) { providers.environmentVariable(key) }
+
+group = libs.versions.pluginGroup.get()
+version = libs.versions.pluginVersion.get()
+
+repositories {
+    mavenLocal()
+//    intellijPlatform {
+//        defaultRepositories()
+//    }
+    maven { url uri('local-repo') }
+    maven { url 'https://nexus-internal.headoffice.psbank.local/repository/at-maven-group/' }
+    maven { url 'https://nexus-external/repository/deprecated-repo.haulmont.com-proxy' }
+    maven { url 'https://nexus-external/repository/maven-public/' }
+    maven { url 'https://nexus-external/repository/maven-newathena-proxy' }
+    maven { url 'https://nexus-external/repository/repo1.maven.org-proxy/' }
+}
+
+dependencies {
+    api(libs.jakarta)
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation(libs.jsoup)
+    implementation(libs.slf4j)
+    implementation(libs.testit.api)
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
+
+intellij {
+//    version = libs.versions.ideaVersion.get()
+    localPath = '/home/opt/intllijidea/idea-IC-241.17890.1/'
+    plugins = []
+}
+
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
+
+    patchPluginXml {
+        sinceBuild = libs.versions.pluginSinceBuild
+        untilBuild = libs.versions.pluginUntilBuild
+    }
+
+    publishPlugin {
+        token = environment('PUBLISH_TOKEN')
+    }
+
+    signPlugin {
+        certificateChain = environment('CERTIFICATE_CHAIN')
+        privateKey = environment('PRIVATE_KEY')
+        password = environment('PRIVATE_KEY_PASSWORD')
+    }
+
+    withType(JavaCompile).configureEach {
+        sourceCompatibility = libs.versions.javaVersion.get()
+        targetCompatibility = libs.versions.javaVersion.get()
+        options.incremental = true
+        options.fork = true
+        options.encoding = libs.versions.javaEncoding.get()
+    }
+
+    withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            apiVersion = '1.6'
+            languageVersion = '1.6'
+            incremental = true
+        }
+    }
+
+    withType(Test).configureEach {
+        def logPropsFile = sourceSets.main.resources.find {
+            it.name.endsWith('logging.properties')
+        }
+
+        if (logPropsFile?.exists()) {
+            systemProperty 'java.util.logging.config.file', logPropsFile
+        }
+
+        systemProperty 'java.util.logging.manager', 'java.util.logging.LogManager'
+        systemProperty 'TEST_CI', System.getProperty('testCi')
+
+        reports {
+            html.required = true
+            junitXml.required = false
+        }
+        testLogging {
+            events = [TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED] as Set
+            showCauses = false
+            showStackTraces = false
+            showStandardStreams = true
+        }
+        outputs.upToDateWhen { false }
+        useJUnitPlatform()
+    }
+}
