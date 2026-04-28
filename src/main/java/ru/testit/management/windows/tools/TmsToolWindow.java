@@ -9,8 +9,9 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
 import org.jdesktop.swingx.JXTree;
-import ru.testit.kotlin.client.models.SectionModel;
-import ru.testit.kotlin.client.models.WorkItemEntityTypes;
+import ru.psb.testit.model.SectionModel;
+import ru.psb.testit.model.WorkItemEntityTypes;
+import ru.psb.testit.model.WorkItemShortResult;
 import ru.testit.management.clients.TmsClient;
 import ru.testit.management.parsers.models.MatchInfo;
 import ru.testit.management.utils.MessagesUtils;
@@ -150,7 +151,7 @@ public class TmsToolWindow extends SimpleToolWindowPanel {
                 node.add(buildChildNode(section, project, sections));
             }
         }
-        for (var workItem : client.getWorkItemsBySectionId(parentSection.getId())) {
+        for (WorkItemShortResult workItem : client.getWorkItemsBySectionId(parentSection.getId())) {
             TmsNodeModel model = new TmsNodeModel(
                     workItem.getName(), workItem.getGlobalId(),
                     null, null, null,

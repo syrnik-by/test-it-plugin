@@ -1,8 +1,24 @@
 package ru.testit.management.clients;
 
+import ru.psb.testit.client.AutoTestsApi;
+import ru.psb.testit.client.AttachmentsApi;
+import ru.psb.testit.client.ProjectsApi;
+import ru.psb.testit.client.SectionsApi;
+import ru.psb.testit.client.TestResultsApi;
+import ru.psb.testit.client.TestRunsApi;
+import ru.psb.testit.client.WorkItemsApi;
+import ru.psb.testit.invoker.ApiClient;
+import ru.psb.testit.invoker.ApiException;
+import ru.psb.testit.invoker.Configuration;
+import ru.psb.testit.model.SectionModel;
+import ru.psb.testit.model.WorkItemModel;
+import ru.psb.testit.model.WorkItemShortResult;
 import ru.testit.management.windows.settings.TmsSettingsState;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -14,40 +30,33 @@ public class TmsClient {
     private final TestResultsApi testResultsApi;
     private final ProjectsApi projectsApi;
     private final WorkItemsApi workItemsApi;
-    private final ProjectSectionsApi projectSectionsApi;
+    private final SectionsApi sectionsApi;
 
     public TmsClient(String url) {
-        testRunsApi = new TestRunsApi(url);
-        init(testRunsApi);
-        autoTestsApi = new AutoTestsApi(url);
-        init(autoTestsApi);
-        attachmentsApi = new AttachmentsApi(url);
-        init(attachmentsApi);
-        testResultsApi = new TestResultsApi(url);
-        init(testResultsApi);
-        projectsApi = new ProjectsApi(url);
-        init(projectsApi);
-        workItemsApi = new WorkItemsApi(url);
-        init(workItemsApi);
-        projectSectionsApi = new ProjectSectionsApi(url);
-        init(projectSectionsApi);
+        ApiClient apiClient = Configuration.getDefaultApiClient();
+        apiClient.setBasePath(url);
+        apiClient.setApiKeyPrefix("PrivateToken");
+        apiClient.setVerifyingSsl(false);
+
+        testRunsApi = new TestRunsApi(apiClient);
+        autoTestsApi = new AutoTestsApi(apiClient);
+        attachmentsApi = new AttachmentsApi(apiClient);
+        testResultsApi = new TestResultsApi(apiClient);
+        projectsApi = new ProjectsApi(apiClient);
+        workItemsApi = new WorkItemsApi(apiClient);
+        sectionsApi = new SectionsApi(apiClient);
+
+        setToken(TmsSettingsState.getInstance().privateToken);
     }
 
-    public void init(ApiClient client) {
-        init(client, TmsSettingsState.getInstance().privateToken);
-    }
-
-    public void init(ApiClient client, String token) {
-        client.getApiKeyPrefix().put("Authorization", "PrivateToken");
-        client.getApiKey().put("Authorization", token);
-        client.setVerifyingSsl(false);
+    public void setToken(String token) {
+        ApiClient apiClient = projectsApi.getApiClient();
+        apiClient.setApiKey(token);
     }
 
     public String getSettingsValidationErrorMsg(String projectId, String privateToken) {
         try {
-            if (projectsApi.getApiKey().getOrDefault("Authorization", "").isEmpty()) {
-                projectsApi.getApiKey().put("Authorization", privateToken);
-            }
+            setToken(privateToken);
             projectsApi.getProjectById(projectId);
             return null;
         } catch (Throwable e) {
@@ -58,11 +67,15 @@ public class TmsClient {
     public Iterable<SectionModel> getSections() {
         System.out.println("getSections:");
         long startTime = System.currentTimeMillis();
-        java.util.Set<SectionModel> sections = new java.util.LinkedHashSet<>();
+        Set<SectionModel> sections = new LinkedHashSet<>();
         try {
-            sections.addAll(projectSectionsApi.getSectionsByProjectId(
-                    TmsSettingsState.getInstance().projectId, null, null, null, null, null));
-        } catch (Throwable e) {
+            String projectId = TmsSettingsState.getInstance().projectId;
+            List<SectionModel> result = projectsApi.getSectionsByProjectId(
+                    projectId, null, null, null, null, null);
+            if (result != null) {
+                sections.addAll(result);
+            }
+        } catch (ApiException e) {
             logger.severe(e.getMessage());
         }
         System.out.println("Затраченное время: " + (System.currentTimeMillis() - startTime) + " мс");
@@ -72,27 +85,26 @@ public class TmsClient {
     public WorkItemModel getWorkItemById(UUID id) {
         System.out.println("getWorkItemById:");
         long startTime = System.currentTimeMillis();
-        WorkItemModel result = workItemsApi.getWorkItemById(id.toString(), null, null);
-        System.out.println("Затраченное время: " + (System.currentTimeMillis() - startTime) + " мс");
-        return result;
+        try {
+            WorkItemModel result = workItemsApi.getWorkItemById(id.toString(), null, null);
+            System.out.println("Затраченное время: " + (System.currentTimeMillis() - startTime) + " мс");
+            return result;
+        } catch (ApiException e) {
+            logger.severe(e.getMessage());
+        }
+        return null;
     }
 
-    public Iterable<WorkItemShortApiResult> getWorkItemsBySectionId(UUID sectionId) {
+    public Iterable<WorkItemShortResult> getWorkItemsBySectionId(UUID sectionId) {
         System.out.println("getWorkItemsBySectionId:");
         long startTime = System.currentTimeMillis();
         if (sectionId == null) return List.of();
-
-        WorkItemFilterApiModel filter = new WorkItemFilterApiModel();
-        filter.setSectionIds(java.util.Set.of(sectionId));
-        filter.setIsDeleted(false);
-        WorkItemSelectApiModel request = new WorkItemSelectApiModel();
-        request.setFilter(filter);
-
         try {
-            List<WorkItemShortApiResult> items = workItemsApi.apiV2WorkItemsSearchPost(request);
+            List<WorkItemShortResult> items = sectionsApi.getWorkItemsBySectionId(
+                    sectionId.toString(), null, null, null, null, null);
             System.out.println("Затраченное время: " + (System.currentTimeMillis() - startTime) + " мс");
-            return items;
-        } catch (Throwable e) {
+            return items != null ? items : List.of();
+        } catch (ApiException e) {
             logger.severe(e.getMessage());
         }
         return List.of();
