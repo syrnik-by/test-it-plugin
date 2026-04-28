@@ -1,7 +1,5 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 plugins {
-    id 'java'
+    id 'java-library'
     id 'org.jetbrains.intellij' version '1.4.0'
 }
 
@@ -13,15 +11,13 @@ version = libs.versions.pluginVersion.get()
 
 repositories {
     mavenLocal()
-//    intellijPlatform {
-//        defaultRepositories()
-//    }
+    mavenCentral()
     maven { url uri('local-repo') }
-    maven { url 'https://nexus-internal.headoffice.psbank.local/repository/at-maven-group/' }
-    maven { url 'https://nexus-external/repository/deprecated-repo.haulmont.com-proxy' }
-    maven { url 'https://nexus-external/repository/maven-public/' }
-    maven { url 'https://nexus-external/repository/maven-newathena-proxy' }
-    maven { url 'https://nexus-external/repository/repo1.maven.org-proxy/' }
+//    maven { url 'https://nexus-internal.headoffice.psbank.local/repository/at-maven-group/' }
+//    maven { url 'https://nexus-external/repository/deprecated-repo.haulmont.com-proxy' }
+//    maven { url 'https://nexus-external/repository/maven-public/' }
+//    maven { url 'https://nexus-external/repository/maven-newathena-proxy' }
+//    maven { url 'https://nexus-external/repository/repo1.maven.org-proxy/' }
 }
 
 dependencies {

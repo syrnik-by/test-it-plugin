@@ -1,12 +1,16 @@
-enableFeaturePreview('VERSION_CATALOGS')
+
 
 pluginManagement {
     repositories {
         maven { url uri('local-repo') }
         mavenLocal()
-        maven {
-            url uri('https://nexus-external/repository/plugins.gradle.org-proxy/')
-        }
+mavenCentral()
+        gradlePluginPortal()
+//        maven {
+//            url uri('https://nexus-external/repository/plugins.gradle.org-proxy/')
+//        }
     }
 }
+enableFeaturePreview('VERSION_CATALOGS')
+
 rootProject.name = 'testit-management'
