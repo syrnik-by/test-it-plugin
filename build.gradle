@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     id 'java-library'
     id 'org.jetbrains.intellij' version '1.4.0'
@@ -35,57 +37,55 @@ intellij {
     plugins = []
 }
 
-tasks {
-    buildSearchableOptions {
-        enabled = false
+buildSearchableOptions {
+    enabled = false
+}
+
+patchPluginXml {
+    sinceBuild = libs.versions.pluginSinceBuild
+    untilBuild = libs.versions.pluginUntilBuild
+}
+
+publishPlugin {
+    token = environment('PUBLISH_TOKEN')
+}
+
+signPlugin {
+    certificateChain = environment('CERTIFICATE_CHAIN')
+    privateKey = environment('PRIVATE_KEY')
+    password = environment('PRIVATE_KEY_PASSWORD')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = libs.versions.javaVersion.get()
+    targetCompatibility = libs.versions.javaVersion.get()
+    options.incremental = true
+    options.fork = true
+    options.encoding = libs.versions.javaEncoding.get()
+}
+
+tasks.withType(Test).configureEach {
+    def logPropsFile = sourceSets.main.resources.find {
+        it.name.endsWith('logging.properties')
     }
 
-    patchPluginXml {
-        sinceBuild = libs.versions.pluginSinceBuild
-        untilBuild = libs.versions.pluginUntilBuild
+    if (logPropsFile?.exists()) {
+        systemProperty 'java.util.logging.config.file', logPropsFile
     }
 
-    publishPlugin {
-        token = environment('PUBLISH_TOKEN')
+    systemProperty 'java.util.logging.manager', 'java.util.logging.LogManager'
+    systemProperty 'TEST_CI', System.getProperty('testCi')
+
+    reports {
+        html.required = true
+        junitXml.required = false
     }
-
-    signPlugin {
-        certificateChain = environment('CERTIFICATE_CHAIN')
-        privateKey = environment('PRIVATE_KEY')
-        password = environment('PRIVATE_KEY_PASSWORD')
+    testLogging {
+        events = [TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED] as Set
+        showCauses = false
+        showStackTraces = false
+        showStandardStreams = true
     }
-
-    withType(JavaCompile).configureEach {
-        sourceCompatibility = libs.versions.javaVersion.get()
-        targetCompatibility = libs.versions.javaVersion.get()
-        options.incremental = true
-        options.fork = true
-        options.encoding = libs.versions.javaEncoding.get()
-    }
-
-    withType(Test).configureEach {
-        def logPropsFile = sourceSets.main.resources.find {
-            it.name.endsWith('logging.properties')
-        }
-
-        if (logPropsFile?.exists()) {
-            systemProperty 'java.util.logging.config.file', logPropsFile
-        }
-
-        systemProperty 'java.util.logging.manager', 'java.util.logging.LogManager'
-        systemProperty 'TEST_CI', System.getProperty('testCi')
-
-        reports {
-            html.required = true
-            junitXml.required = false
-        }
-        testLogging {
-            events = [TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED] as Set
-            showCauses = false
-            showStackTraces = false
-            showStandardStreams = true
-        }
-        outputs.upToDateWhen { false }
-        useJUnitPlatform()
-    }
+    outputs.upToDateWhen { false }
+    useJUnitPlatform()
 }
