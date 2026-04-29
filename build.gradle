@@ -36,6 +36,7 @@ intellij {
     version = libs.versions.ideaVersion.get()
 //    localPath = '/home/opt/intllijidea/idea-IC-241.17890.1/'
     plugins = ['java', 'kotlin']
+    instrumentCode = false
 }
 
 buildSearchableOptions {
