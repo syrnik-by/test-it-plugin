@@ -26,27 +26,27 @@ public class TmsSettingsFactory implements Configurable {
 
     @Override
     public boolean isModified() {
-        boolean modified = !window.getUrl().getText().equals(state.url);
-        modified |= !window.getProjectId().getText().equals(state.projectId);
-        modified |= !window.getPrivateToken().getText().equals(state.privateToken);
+        boolean modified = !window.getUrlField().getText().equals(state.url);
+        modified |= !window.getProjectIdField().getText().equals(state.projectId);
+        modified |= !window.getPrivateTokenField().getText().equals(state.privateToken);
         modified |= !String.valueOf(window.getFrameworkComboBox().getSelectedItem()).equals(state.getFramework());
         return modified;
     }
 
     @Override
     public void apply() {
-        state.url = window.getUrl().getText();
-        state.projectId = window.getProjectId().getText();
-        state.privateToken = window.getPrivateToken().getText();
+        state.url = window.getUrlField().getText();
+        state.projectId = window.getProjectIdField().getText();
+        state.privateToken = window.getPrivateTokenField().getText();
         state.setFramework(String.valueOf(window.getFrameworkComboBox().getSelectedItem()));
         SyncUtils.refresh();
     }
 
     @Override
     public void reset() {
-        window.getUrl().setText(state.url);
-        window.getProjectId().setText(state.projectId);
-        window.getPrivateToken().setText(state.privateToken);
+        window.getUrlField().setText(state.url);
+        window.getProjectIdField().setText(state.projectId);
+        window.getPrivateTokenField().setText(state.privateToken);
         window.getFrameworkComboBox().setSelectedItem(state.getFramework());
     }
 

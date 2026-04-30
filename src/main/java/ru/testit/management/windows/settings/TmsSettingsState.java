@@ -7,21 +7,19 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import lombok.Data;
 import ru.testit.management.enums.FrameworkOption;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @State(name = "ru.testit.settings.TmsSettingsState", storages = @Storage("TestItSettings.xml"))
 @Service
+@Data
 public final class TmsSettingsState implements PersistentStateComponent<TmsSettingsState> {
     public String url = "";
     public String projectId = "";
     public String privateToken = "";
     private String framework = getDefaultFramework();
-
-    public String getFramework() {
-        return framework;
-    }
 
     public void setFramework(@Nullable String value) {
         if (value == null) {

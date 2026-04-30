@@ -2,7 +2,7 @@ package ru.testit.management.utils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
-import ru.testit.kotlin.client.models.StepModel;
+import ru.psb.testit.client.model.StepModel;
 import ru.testit.management.enums.FrameworkOption;
 import ru.testit.management.snippet.*;
 import ru.testit.management.windows.settings.TmsSettingsState;

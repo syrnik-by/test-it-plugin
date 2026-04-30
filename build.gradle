@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.8.22'
+//    id 'org.jetbrains.kotlin.jvm' version "1.6.0"
     id 'org.jetbrains.intellij' version '1.4.0'
 }
 
@@ -14,32 +14,46 @@ version = libs.versions.pluginVersion.get()
 
 repositories {
     mavenLocal()
-    mavenCentral()
     maven { url uri('local-repo') }
-//    maven { url 'https://nexus-internal.headoffice.psbank.local/repository/at-maven-group/' }
-//    maven { url 'https://nexus-external/repository/deprecated-repo.haulmont.com-proxy' }
-//    maven { url 'https://nexus-external/repository/maven-public/' }
-//    maven { url 'https://nexus-external/repository/maven-newathena-proxy' }
-//    maven { url 'https://nexus-external/repository/repo1.maven.org-proxy/' }
+    maven { url 'https://nexus-internal.headoffice.psbank.local/repository/at-maven-group/' }
+    maven { url 'https://nexus-external/repository/deprecated-repo.haulmont.com-proxy' }
+    maven { url 'https://nexus-external/repository/maven-public/' }
+    maven { url 'https://nexus-external/repository/maven-newathena-proxy' }
+    maven { url 'https://nexus-external/repository/repo1.maven.org-proxy/' }
 }
 
 dependencies {
-    api(libs.jakarta)
+    implementation(libs.jakarta)
     implementation(libs.jsoup)
     implementation(libs.slf4j)
     implementation(libs.testit.api)
+    implementation 'ru.psb.testit:testit-java-commons:1.2.8'
     implementation 'com.squareup.okhttp3:okhttp:3.9.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    compileOnly fileTree(dir: "${projectDir}/idea-IC-241.17890.1/lib", include: ['*.jar'])
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    implementation "org.projectlombok:lombok:1.18.22"
+    compileOnly "org.projectlombok:lombok:1.18.22"
+    annotationProcessor "org.projectlombok:lombok:1.18.22"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.22"
 }
 
 intellij {
-    version = libs.versions.ideaVersion.get()
-//    localPath = '/home/opt/intllijidea/idea-IC-241.17890.1/'
-    plugins = ['java', 'kotlin']
-    instrumentCode = false
+//    version = libs.versions.ideaVersion.get()
+//    localPath = "${projectDir}/idea-IC-241.17890.1/"
+    localPath = "/home/opt/intllijidea/idea-IC-241.17890.1/"
+    type = 'IC'
+    plugins = ['java']
 }
 
 buildSearchableOptions {
+    enabled = false
+}
+
+instrumentCode {
+    enabled = true
+}
+
+instrumentTestCode {
     enabled = false
 }
 

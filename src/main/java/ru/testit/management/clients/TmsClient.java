@@ -1,21 +1,20 @@
 package ru.testit.management.clients;
 
-import ru.psb.testit.client.AutoTestsApi;
-import ru.psb.testit.client.AttachmentsApi;
-import ru.psb.testit.client.ProjectsApi;
-import ru.psb.testit.client.SectionsApi;
-import ru.psb.testit.client.TestResultsApi;
-import ru.psb.testit.client.TestRunsApi;
-import ru.psb.testit.client.WorkItemsApi;
-import ru.psb.testit.invoker.ApiClient;
-import ru.psb.testit.invoker.ApiException;
-import ru.psb.testit.invoker.Configuration;
-import ru.psb.testit.model.SectionModel;
-import ru.psb.testit.model.WorkItemModel;
-import ru.psb.testit.model.WorkItemShortResult;
+import ru.psb.testit.client.api.AutoTestsApi;
+import ru.psb.testit.client.api.AttachmentsApi;
+import ru.psb.testit.client.api.ProjectsApi;
+import ru.psb.testit.client.api.SectionsApi;
+import ru.psb.testit.client.api.TestResultsApi;
+import ru.psb.testit.client.api.TestRunsApi;
+import ru.psb.testit.client.api.WorkItemsApi;
+import ru.psb.testit.client.invoker.ApiClient;
+import ru.psb.testit.client.invoker.ApiException;
+import ru.psb.testit.client.invoker.Configuration;
+import ru.psb.testit.client.model.SectionModel;
+import ru.psb.testit.client.model.WorkItemModel;
+import ru.psb.testit.client.model.WorkItemShortModel;
 import ru.testit.management.windows.settings.TmsSettingsState;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +35,6 @@ public class TmsClient {
         ApiClient apiClient = Configuration.getDefaultApiClient();
         apiClient.setBasePath(url);
         apiClient.setApiKeyPrefix("PrivateToken");
-        apiClient.setVerifyingSsl(false);
 
         testRunsApi = new TestRunsApi(apiClient);
         autoTestsApi = new AutoTestsApi(apiClient);
@@ -95,13 +93,13 @@ public class TmsClient {
         return null;
     }
 
-    public Iterable<WorkItemShortResult> getWorkItemsBySectionId(UUID sectionId) {
+    public Iterable<WorkItemShortModel> getWorkItemsBySectionId(UUID sectionId) {
         System.out.println("getWorkItemsBySectionId:");
         long startTime = System.currentTimeMillis();
         if (sectionId == null) return List.of();
         try {
-            List<WorkItemShortResult> items = sectionsApi.getWorkItemsBySectionId(
-                    sectionId.toString(), null, null, null, null, null);
+            List<WorkItemShortModel> items = sectionsApi.getWorkItemsBySectionId(
+                    sectionId, null, null, null, null, null, null, null, null);
             System.out.println("Затраченное время: " + (System.currentTimeMillis() - startTime) + " мс");
             return items != null ? items : List.of();
         } catch (ApiException e) {

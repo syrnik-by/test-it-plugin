@@ -1,8 +1,8 @@
 package ru.testit.management.windows.tools;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import ru.testit.kotlin.client.models.StepModel;
-import ru.testit.kotlin.client.models.WorkItemEntityTypes;
+import ru.psb.testit.client.model.StepModel;
+import ru.psb.testit.client.model.WorkItemEntityTypes;
 
 import java.util.UUID;
 

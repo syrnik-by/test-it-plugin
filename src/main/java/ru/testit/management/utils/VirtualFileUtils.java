@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.search.FilenameIndex;
@@ -25,7 +26,7 @@ public class VirtualFileUtils {
         long startTime = System.currentTimeMillis();
         projectJavaFiles.clear();
 
-        ApplicationManager.getApplication().runReadAction(() ->
+        ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () ->
             projectJavaFiles.addAll(
                 FilenameIndex.getAllFilesByExt(project, "java", GlobalSearchScope.projectScope(project))
             )
@@ -69,7 +70,12 @@ public class VirtualFileUtils {
 
         Collections.list(fileNode.children()).forEach(matchNodeObj -> {
             DefaultMutableTreeNode matchNode = (DefaultMutableTreeNode) matchNodeObj;
-            CheckBoxNode checkBoxNode = (matchNode.getUserObject() instanceof CheckBoxNode c) ? c : null;
+            CheckBoxNode checkBoxNode;
+            if (matchNode.getUserObject() instanceof CheckBoxNode) {
+                checkBoxNode = (CheckBoxNode) matchNode.getUserObject();
+            } else {
+                checkBoxNode = null;
+            }
             if (checkBoxNode == null) return;
             int index = fileNode.getIndex(matchNode);
 

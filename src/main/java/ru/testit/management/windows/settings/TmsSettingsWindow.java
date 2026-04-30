@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTextField;
+import lombok.Data;
 import ru.testit.management.clients.TmsClient;
 import ru.testit.management.enums.FrameworkOption;
 import ru.testit.management.utils.MessagesUtils;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+@Data
 public class TmsSettingsWindow {
 
     public final JPanel panel;
@@ -25,8 +27,8 @@ public class TmsSettingsWindow {
     public JBTextField privateTokenField;
     public JBTextField urlField;
 
-    private final TmsSettingsState _state = TmsSettingsState.getInstance();
-    private JLabel _verifyLabel;
+    private final TmsSettingsState state = TmsSettingsState.getInstance();
+    private JLabel verifyLabel;
 
     public TmsSettingsWindow() {
         panel = new JPanel(new GridBagLayout());
@@ -39,7 +41,7 @@ public class TmsSettingsWindow {
         // Browser link
         JLabel linkLabel = new JLabel(
                 "<html><a href='" + MessagesUtils.get("window.settings.instruction.link.url") + "'>" +
-                MessagesUtils.get("window.settings.instruction.link.text") + "</a></html>"
+                        MessagesUtils.get("window.settings.instruction.link.text") + "</a></html>"
         );
         gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2; gbc.weightx = 1.0;
         panel.add(linkLabel, gbc);
@@ -55,7 +57,7 @@ public class TmsSettingsWindow {
         gbc.gridwidth = 1; gbc.weightx = 0.3;
         gbc.gridx = 0; gbc.gridy = row;
         panel.add(new JBLabel(MessagesUtils.get("window.settings.group.connection.url.name")), gbc);
-        urlField = new JBTextField(_state.getUrl());
+        urlField = new JBTextField(state.getUrl());
         gbc.gridx = 1; gbc.weightx = 0.7;
         panel.add(urlField, gbc);
         row++;
@@ -63,7 +65,7 @@ public class TmsSettingsWindow {
         // Project ID
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
         panel.add(new JBLabel(MessagesUtils.get("window.settings.group.connection.projectId.name")), gbc);
-        projectIdField = new JBTextField(_state.getProjectId());
+        projectIdField = new JBTextField(state.getProjectId());
         gbc.gridx = 1; gbc.weightx = 0.7;
         panel.add(projectIdField, gbc);
         row++;
@@ -71,31 +73,31 @@ public class TmsSettingsWindow {
         // Private Token
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
         panel.add(new JBLabel(MessagesUtils.get("window.settings.group.connection.token.name")), gbc);
-        privateTokenField = new JBTextField(_state.getPrivateToken());
+        privateTokenField = new JBTextField(state.getPrivateToken());
         gbc.gridx = 1; gbc.weightx = 0.7;
         panel.add(privateTokenField, gbc);
         row++;
 
         // Verify button + label
         JButton verifyButton = new JButton(MessagesUtils.get("window.settings.group.connection.verify.button.text"));
-        _verifyLabel = new JBLabel(MessagesUtils.get("window.settings.group.connection.verify.label.end.text"));
+        verifyLabel = new JBLabel(MessagesUtils.get("window.settings.group.connection.verify.label.end.text"));
 
         verifyButton.addActionListener(e -> {
-            _verifyLabel.setText(MessagesUtils.get("window.settings.group.connection.verify.label.start.text"));
+            verifyLabel.setText(MessagesUtils.get("window.settings.group.connection.verify.label.start.text"));
             ApplicationManager.getApplication().invokeLater(() ->
-                verifySettings(
-                        projectIdField.getText(),
-                        privateTokenField.getText(),
-                        getValidUrl(urlField.getText()),
-                        _verifyLabel
-                )
+                    verifySettings(
+                            projectIdField.getText(),
+                            privateTokenField.getText(),
+                            getValidUrl(urlField.getText()),
+                            verifyLabel
+                    )
             );
         });
 
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
         panel.add(verifyButton, gbc);
         gbc.gridx = 1; gbc.weightx = 0.7;
-        panel.add(_verifyLabel, gbc);
+        panel.add(verifyLabel, gbc);
         row++;
 
         // --- Group: Settings ---
@@ -111,10 +113,10 @@ public class TmsSettingsWindow {
                 .map(Object::toString)
                 .toList();
         frameworkComboBox = new ComboBox<>(options.toArray(new String[0]));
-        frameworkComboBox.setSelectedItem(_state.getFramework());
+        frameworkComboBox.setSelectedItem(state.getFramework());
         frameworkComboBox.addItemListener(it -> {
             if (it.getStateChange() == ItemEvent.SELECTED) {
-                _state.setFramework((String) it.getItem());
+                state.setFramework((String) it.getItem());
             }
         });
 
@@ -129,22 +131,22 @@ public class TmsSettingsWindow {
     }
 
     public void apply() {
-        _state.setUrl(getValidUrl(urlField.getText()));
-        _state.setProjectId(projectIdField.getText());
-        _state.setPrivateToken(privateTokenField.getText());
+        state.setUrl(getValidUrl(urlField.getText()));
+        state.setProjectId(projectIdField.getText());
+        state.setPrivateToken(privateTokenField.getText());
     }
 
     public void reset() {
-        urlField.setText(_state.getUrl());
-        projectIdField.setText(_state.getProjectId());
-        privateTokenField.setText(_state.getPrivateToken());
-        frameworkComboBox.setSelectedItem(_state.getFramework());
+        urlField.setText(state.getUrl());
+        projectIdField.setText(state.getProjectId());
+        privateTokenField.setText(state.getPrivateToken());
+        frameworkComboBox.setSelectedItem(state.getFramework());
     }
 
     public boolean isModified() {
-        return !urlField.getText().equals(_state.getUrl())
-                || !projectIdField.getText().equals(_state.getProjectId())
-                || !privateTokenField.getText().equals(_state.getPrivateToken());
+        return !urlField.getText().equals(state.getUrl())
+                || !projectIdField.getText().equals(state.getProjectId())
+                || !privateTokenField.getText().equals(state.getPrivateToken());
     }
 
     private String getValidUrl(String text) {

@@ -33,7 +33,8 @@ public class SearchAllureMouseListener implements MouseListener {
 
         Object userObject = node.getUserObject();
 
-        if (userObject instanceof CheckBoxNode checkBoxNode) {
+        if (userObject instanceof CheckBoxNode) {
+            CheckBoxNode checkBoxNode = (CheckBoxNode) userObject;
             checkBoxNode.setSelected(!checkBoxNode.isSelected());
             tree.repaint();
         }

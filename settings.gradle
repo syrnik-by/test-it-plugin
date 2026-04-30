@@ -4,11 +4,9 @@ pluginManagement {
     repositories {
         maven { url uri('local-repo') }
         mavenLocal()
-mavenCentral()
-        gradlePluginPortal()
-//        maven {
-//            url uri('https://nexus-external/repository/plugins.gradle.org-proxy/')
-//        }
+        maven {
+            url uri('https://nexus-external/repository/plugins.gradle.org-proxy/')
+        }
     }
 }
 enableFeaturePreview('VERSION_CATALOGS')

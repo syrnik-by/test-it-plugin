@@ -1,6 +1,6 @@
 package ru.testit.management.windows.tools;
 
-import ru.testit.kotlin.client.models.WorkItemEntityTypes;
+import ru.psb.testit.client.model.WorkItemEntityTypes;
 import ru.testit.management.icons.TmsIcons;
 
 import java.awt.Component;
@@ -41,10 +41,10 @@ public class TmsCellStyle extends DefaultTreeCellRenderer {
     }
 
     private void setWorkItemIcon(TmsNodeModel model) {
-        WorkItemEntityTypes type = model.getEntityTypeName();
-        if (WorkItemEntityTypes.CheckLists.equals(type)) {
+        var type = model.getEntityTypeName();
+        if (WorkItemEntityTypes.CHECKLISTS.equals(type)) {
             this.setIcon(getCheckListIcon(model.isAutomated()));
-        } else if (WorkItemEntityTypes.SharedSteps.equals(type)) {
+        } else if (WorkItemEntityTypes.SHAREDSTEPS.equals(type)) {
             this.setIcon(getSharedStepIcon(model.isAutomated()));
         } else {
             this.setIcon(getTestCaseIcon(model.isAutomated()));

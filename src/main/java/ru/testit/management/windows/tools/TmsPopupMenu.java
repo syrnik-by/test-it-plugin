@@ -22,7 +22,7 @@ import java.util.List;
 
 public class TmsPopupMenu extends JBPopupMenu {
 
-    private final TmsSettingsState _state = TmsSettingsState.getInstance();
+    private final TmsSettingsState state = TmsSettingsState.getInstance();
 
     public TmsPopupMenu(JTree tree, Project project) {
         JBMenuItem copyItem = new JBMenuItem(
@@ -44,7 +44,7 @@ public class TmsPopupMenu extends JBPopupMenu {
             TmsNodeModel model = (TmsNodeModel) node.getUserObject();
 
             if (node.isLeaf() && model.getId() != null) {
-                TmsNodeModel fullModel = new TmsClient(_state.getUrl()).getWorkItemById(model.getId());
+                var fullModel = new TmsClient(state.url).getWorkItemById(model.getId());
 
                 model.setPreconditions(fullModel.getPreconditionSteps());
                 model.setSteps(fullModel.getSteps());
@@ -68,9 +68,9 @@ public class TmsPopupMenu extends JBPopupMenu {
 
         VirtualFileUtils.refresh(project);
 
-        System.out.println("Всего файлов с нужным ext: " + VirtualFileUtils.getProjectJavaFiles().size());
+        System.out.println("Всего файлов с нужным ext: " + VirtualFileUtils.projectJavaFiles.size());
 
-        for (var file : VirtualFileUtils.getProjectJavaFiles()) {
+        for (var file : VirtualFileUtils.projectJavaFiles) {
             List<String> lines = new ArrayList<>();
 
             ApplicationManager.getApplication().runReadAction(() -> {
