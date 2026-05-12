@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+        maven {
+            url "$nexusRawRepoUrl"
+//            credentials {
+//                username = "$mavenUsername"
+//                password = "$mavenPassword"
+//            }
+        }
+        maven {
+            url 'https://nexus-external/repository/plugins.gradle.org-proxy/'
+        }
+    }
+}
+enableFeaturePreview('VERSION_CATALOGS')
+
+rootProject.name = 'testit-management'

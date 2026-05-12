@@ -1,0 +1,101 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.4.0'
+}
+
+def properties(String key) { providers.gradleProperty(key) }
+
+def environment(String key) { providers.environmentVariable(key) }
+
+group = "$pluginGroup"
+version = "$pluginVersion"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "$nexusRawRepoUrl"
+//        credentials {
+//            username = "$mavenUsername"
+//            password = "$mavenPassword"
+//        }
+    }
+    maven { url "$atMavenGroupUrl" }
+    maven { url "$mvnProxyUrl" }
+}
+
+configurations {
+    bundled
+}
+
+dependencies {
+    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.0.0'
+    bundled 'org.jsoup:jsoup:1.10.2'
+    implementation 'org.slf4j:slf4j-simple:1.7.5'
+    implementation 'ru.psb.testit:testit-api-client:1.0.4-SNAPSHOT'
+    implementation 'ru.psb.testit:testit-java-commons:1.2.8'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+    compileOnly fileTree(dir: "${projectDir}/idea-IC-241.17890.1/lib", include: ['*.jar'])
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.8.2'
+    implementation "org.projectlombok:lombok:1.18.22"
+    compileOnly "org.projectlombok:lombok:1.18.22"
+    annotationProcessor "org.projectlombok:lombok:1.18.22"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.22"
+}
+
+intellij {
+//    version = '$ideaVersion'
+    localPath = "C:/Program Files/JetBrains/IntelliJ IDEA Community Edition 2024.1.4/"
+//    localPath = "/home/opt/intllijidea/idea-IC-241.17890.1/"
+    type = 'IC'
+    plugins = ['java']
+}
+
+buildSearchableOptions {
+    enabled = false
+}
+
+patchPluginXml {
+    sinceBuild = "241"
+    untilBuild = "285.*"
+}
+
+publishPlugin {
+    token = environment('PUBLISH_TOKEN')
+}
+
+signPlugin {
+    certificateChain = environment('CERTIFICATE_CHAIN')
+    privateKey = environment('PRIVATE_KEY')
+    password = environment('PRIVATE_KEY_PASSWORD')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
+    options.incremental = true
+    options.fork = true
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Test).configureEach {
+    doFirst {
+        useJUnitPlatform() {
+            includeTags("@Integration")
+        }
+    }
+}
+
+tasks.withType(Test) {
+    jvmArgs = ["-Djavax.net.ssl.trustStore=$rootProject.rootDir/jssecacerts", '-Dconsole.encoding=UTF-8']
+}
+
+jar {
+    from {
+        configurations.bundled.collect {
+            zipTree(it)
+        }
+        setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    }
+}
